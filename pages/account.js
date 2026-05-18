@@ -4,6 +4,7 @@ import Nav from "../components/nav";
 import { showError, showSuccess, showWarning } from "../utils/verify";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import parseJwt from "../utils/parse";
 
 const API = "https://api.muselab.app/api/account";
 

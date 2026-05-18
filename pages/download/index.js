@@ -14,7 +14,7 @@ const downloads = [
   },
   {
     title: "MacOS",
-    filename: "muselab-mac",
+    filename: "muselab-mac.zip",
     icon: <FaApple />,
   },
   {

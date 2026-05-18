@@ -11,8 +11,8 @@ export default function Home() {
         <title>MuseLab</title>
         <meta
           name="description"
-          content="A free plugin for MuseScore 3 enabling real-time collaboration with
-          other users."
+          content="A free plugin for MuseScore 3 (and MuseScore 4, alpha) enabling
+          real-time collaboration with other users."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -24,8 +24,10 @@ export default function Home() {
         <h2 className="w-full text-base md:text-2xl xl:text-3xl font-normal text-white text-center max-w-5xl">
           Create <b className="text-fuchsia-400">incredible music</b> together
           in <b className="text-lime-300">real-time</b> with MuseLab, a{" "}
-          <b className="text-teal-400">free plugin</b> developed for{" "}
-          <b className="text-blue-300">MuseScore3</b>.
+          <b className="text-teal-400">free plugin</b> for{" "}
+          <b className="text-blue-300">MuseScore 3</b> — now with{" "}
+          <b className="text-blue-300">MuseScore 4</b>{" "}
+          <b className="text-amber-300">(alpha)</b> support.
         </h2>
         <div className="flex flex-col portrait:space-y-5 landscape:flex-row landscape:space-x-5 mt-10">
           <Button text="Download" onClick="/download" type="primary" />

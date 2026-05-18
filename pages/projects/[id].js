@@ -231,6 +231,11 @@ export default function ProjectPage() {
           });
         });
         break;
+      case "version":
+        newProject.files.sort((a, b) => {
+          return (b.version ?? 0) - (a.version ?? 0);
+        });
+        break;
       case "oldest":
         newProject.files.sort((a, b) => {
           return new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -275,7 +280,6 @@ export default function ProjectPage() {
   };
 
   const unzipFile = () => {
-    // verif
     if (!file) {
       showError("Please select a file.");
       return;
@@ -303,16 +307,13 @@ export default function ProjectPage() {
           zipData.forEach((relativePath, zipEntry) => {
             promises.push(
               zipEntry.async("blob").then((fileData) => {
-                // Create a new file object with the extracted file data
                 let extractedFile = new File([fileData], zipEntry.name, {
                   type: fileData.type,
                 });
-                // Upload the extracted file using the existing uploadFile function
                 if (zipEntry.name.endsWith(".mscx")) addFile(extractedFile);
               })
             );
           });
-          // Wait for all extraction and upload operations to complete
           Promise.all(promises).catch((error) => {
             showError("Error during file extraction or upload:" + error);
           });
@@ -321,7 +322,6 @@ export default function ProjectPage() {
           showError("Error while loading zip:" + error);
         });
     };
-    // unzip file
     reader.readAsArrayBuffer(file);
   };
 
@@ -413,6 +413,10 @@ export default function ProjectPage() {
             <p className="text-white font-regular text-sm sm:text-lg xl:text-xl">
               <b className="font-black text-sky-300">Genre: </b>
               {project.genre || "Unknown genre"}
+            </p>
+            <p className="text-white font-regular text-sm sm:text-lg xl:text-xl">
+              <b className="font-black text-teal-300">MuseScore version: </b>
+              {project.version ? "v" + project.version : "Unknown"}
             </p>
             <div className="w-full flex justify-between items-center">
               <p className="text-white font-regular text-sm sm:text-lg xl:text-xl">
@@ -584,6 +588,9 @@ export default function ProjectPage() {
                 <option value="filename" className="text-xs lg:text-sm">
                   File name
                 </option>
+                <option value="version" className="text-xs lg:text-sm">
+                  Version
+                </option>
               </select>
             </p>
             <p className="text-white/50 font-regular text-right text-xs sm:text-sm lg:text-base xl:text-lg">
@@ -594,10 +601,9 @@ export default function ProjectPage() {
             <ul className="relative w-full h-full overflow-y-scroll space-y-2 px-3 py-2">
               {project.files && project.files.length > 0 ? (
                 project.files.map((file, index) => (
-                  <>
+                  <React.Fragment key={index}>
                     <li
                       className="py-4 min-h-[50px] px-2 w-full flex flex-col items-start justify-start"
-                      key={index}
                     >
                       <div className="w-full flex flex-row items-center justify-between">
                         <h3 className="text-white font-black text-sm sm:text-lg xl:text-xl">
@@ -655,7 +661,7 @@ export default function ProjectPage() {
                     {index < project.files.length - 1 && (
                       <div className="w-full h-0.5 bg-white/20 my-1" />
                     )}
-                  </>
+                  </React.Fragment>
                 ))
               ) : (
                 <p className="text-white/50 font-regular text-xs sm:text-sm lg:text-base xl:text-lg">

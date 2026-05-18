@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import Head from "next/head";
 import Nav from "../../components/nav";
@@ -6,11 +6,12 @@ import Image from "next/image";
 import { showError, showSuccess } from "../../utils/verify";
 
 export default function Download() {
+  const [version, setVersion] = useState(3);
   const downloadZip = () => {
-    fetch("https://api.muselab.app/api/plugin/download", {
+    fetch("https://api.muselab.app/api/plugin/download?v=" + version, {
       method: "GET",
       headers: {
-        authorization: "Bearer " + localStorage.getItem("token"),
+        authorization: "Bearer " + localStorage.getItem("accessToken"),
       },
     })
       .then((res) => {
@@ -19,7 +20,7 @@ export default function Download() {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = "Muselab.zip";
+            a.download = version >= 4 ? "Muselab-v4.zip" : "Muselab.zip";
             a.click();
             showSuccess("Downloaded successfully!");
           });
@@ -37,8 +38,8 @@ export default function Download() {
         <title>Manual Installation</title>
         <meta
           name="description"
-          content="A free plugin for MuseScore 3 enabling real-time collaboration with
-          other users."
+          content="A free plugin for MuseScore 3 (and MuseScore 4, alpha) enabling
+          real-time collaboration with other users."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -50,7 +51,16 @@ export default function Download() {
         <div className="w-full text-sm sm:text-base md:text-lg xl:text-2xl font-normal text-white text-center max-w-5xl grid grid-cols-1 gap-12 my-10">
           <div>
             <b className="font-black text-white">1. </b>
-            Download the{" "}
+            Choose your MuseScore version{" "}
+            <select
+              value={version}
+              onChange={(e) => setVersion(Number(e.target.value))}
+              className="mx-1 align-middle bg-slate-800/70 ring-1 ring-slate-600 rounded-md px-2 py-1 text-sm sm:text-base md:text-lg text-white focus:outline-none focus:ring-teal-500/70 duration-200"
+            >
+              <option value={3}>MuseScore 3 (stable)</option>
+              <option value={4}>MuseScore 4 (alpha)</option>
+            </select>{" "}
+            and download the{" "}
             <button
               className="text-teal-400 underline hover:text-teal-200"
               onClick={() => {
@@ -59,7 +69,7 @@ export default function Download() {
             >
               ZIP file
             </button>
-            .
+            {version >= 4 ? " (alpha build)" : ""}.
           </div>
           <div className="w-full flex flex-row flex-nowrap items-center space-x-10 justify-center">
             <div className="w-1/2 text-right">

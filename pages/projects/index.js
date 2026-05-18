@@ -16,6 +16,34 @@ export default function Projects() {
   const [projectTitle, setProjectTitle] = useState("");
   const [projectGenre, setProjectGenre] = useState("");
   const [projectEnsemble, setProjectEnsemble] = useState("");
+  const [projectVersion, setProjectVersion] = useState(3);
+  const [sortMethod, setSortMethod] = useState("newest");
+
+  const fetchProjects = (sort) => {
+    fetch("https://api.muselab.app/api/projects/list?sort=" + (sort || "newest"), {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + localStorage.getItem("accessToken"),
+      },
+    })
+      .then((response) => {
+        if (response.ok) {
+          response
+            .json()
+            .then((data) => {
+              setProjects(data);
+            })
+            .catch((error) => {
+              showError(error.message);
+            });
+        } else {
+          throw new Error("Failed to fetch projects.");
+        }
+      })
+      .catch((error) => {
+        showError(error.message);
+      });
+  };
 
   const createProject = () => {
     fetch("https://api.muselab.app/api/projects/create", {
@@ -28,6 +56,7 @@ export default function Projects() {
         name: projectTitle || "Untitled",
         genre: projectGenre || "Any",
         ensemble: projectEnsemble || "Any",
+        version: projectVersion,
       }),
     })
       .then((response) => {
@@ -57,32 +86,16 @@ export default function Projects() {
     } else {
       setUsername(localStorage.getItem("username"));
       setToken(localStorage.getItem("accessToken"));
-
-      fetch("https://api.muselab.app/api/projects/list", {
-        method: "GET",
-        headers: {
-          Authorization: "Bearer " + localStorage.getItem("accessToken"),
-        },
-      })
-        .then((response) => {
-          if (response.ok) {
-            response
-              .json()
-              .then((data) => {
-                setProjects(data);
-              })
-              .catch((error) => {
-                showError(error.message);
-              });
-          } else {
-            throw new Error("Failed to fetch projects.");
-          }
-        })
-        .catch((error) => {
-          showError(error.message);
-        });
+      fetchProjects(sortMethod);
     }
   }, []);
+
+  // Re-fetch (server-side sorted) whenever the sort method changes.
+  useEffect(() => {
+    if (localStorage.getItem("isLoggedIn") === "true") {
+      fetchProjects(sortMethod);
+    }
+  }, [sortMethod]);
 
   return (
     <div className="w-screen h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -127,6 +140,19 @@ export default function Projects() {
                 value={projectEnsemble}
                 onChange={(e) => setProjectEnsemble(e.target.value)}
               />
+              <div className="w-full flex flex-col gap-1">
+                <label className="text-white/50 text-sm font-medium">
+                  MuseScore version
+                </label>
+                <select
+                  className="w-full h-10 px-3 rounded-lg bg-slate-900/60 text-white/70 focus:outline-none focus:ring-1 focus:ring-slate-600"
+                  value={projectVersion}
+                  onChange={(e) => setProjectVersion(Number(e.target.value))}
+                >
+                  <option value={3}>MuseScore 3 (.mscx)</option>
+                  <option value={4}>MuseScore 4 (.mscz)</option>
+                </select>
+              </div>
               <Button text="Create" type="primary" onClick={createProject} />
             </div>
           }
@@ -134,6 +160,32 @@ export default function Projects() {
           setShowModal={setShowModal}
           name="createProject"
         />
+        <div className="flex flex-row items-center gap-2 mt-6">
+          <p className="text-white/50 font-regular text-xs sm:text-sm lg:text-base">
+            Sort by:
+          </p>
+          <select
+            className="bg-transparent text-white/50 focus:outline-none text-xs sm:text-sm lg:text-base"
+            value={sortMethod}
+            onChange={(e) => setSortMethod(e.target.value)}
+          >
+            <option value="newest" className="text-xs lg:text-sm">
+              Newest
+            </option>
+            <option value="oldest" className="text-xs lg:text-sm">
+              Oldest
+            </option>
+            <option value="name" className="text-xs lg:text-sm">
+              Name
+            </option>
+            <option value="version" className="text-xs lg:text-sm">
+              Version (v3 first)
+            </option>
+            <option value="version_desc" className="text-xs lg:text-sm">
+              Version (v4 first)
+            </option>
+          </select>
+        </div>
         {projects.length === 0 && (
           <p className="text-white/70 text-center mt-10">
             You don&apos;t have any projects yet.{" "}

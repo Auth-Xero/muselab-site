@@ -6,21 +6,40 @@ import useWindowDimensions from "../hooks/useWindowDimensions";
 import { HiMenu } from "react-icons/hi";
 import { showError, showSuccess } from "../utils/verify";
 import { ToastContainer } from "react-toastify";
+import { apiRequest } from "../utils/api";
 
 export default function Nav({ fixed }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { width, height } = useWindowDimensions();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+    setIsLoggedIn(loggedIn);
+    if (!loggedIn) return;
+
+    try {
+      const cached = JSON.parse(localStorage.getItem("roles") || "[]");
+      if (Array.isArray(cached)) setIsAdmin(cached.includes("ROLE_ADMIN"));
+    } catch {
+    }
+
+    apiRequest("/auth/roles")
+      .then((roles) => {
+        if (!Array.isArray(roles)) return;
+        localStorage.setItem("roles", JSON.stringify(roles));
+        setIsAdmin(roles.includes("ROLE_ADMIN"));
+      })
+      .catch(() => {
+      });
   }, []);
 
   const logout = () => {
     fetch("https://api.muselab.app/api/auth/logout", {
       method: "GET",
       headers: {
-        authorization: "Bearer " + localStorage.getItem("token"),
+        authorization: "Bearer " + localStorage.getItem("accessToken"),
       },
     })
       .then((res) => {
@@ -89,6 +108,47 @@ export default function Nav({ fixed }) {
                   Projects
                 </Link>
               </li>
+            )}
+            {isLoggedIn && (
+              <li>
+                <Link
+                  href="/account"
+                  className="hover:text-teal-500 duration-300 ease-in-out"
+                >
+                  Account
+                </Link>
+              </li>
+            )}
+            {isLoggedIn && isAdmin && (
+              <>
+                <li className="pt-2 text-xs uppercase tracking-widest text-teal-400/70">
+                  Admin
+                </li>
+                <li>
+                  <Link
+                    href="/admin/stats"
+                    className="hover:text-teal-500 duration-300 ease-in-out"
+                  >
+                    Stats
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/logs"
+                    className="hover:text-teal-500 duration-300 ease-in-out"
+                  >
+                    Logs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/plugin"
+                    className="hover:text-teal-500 duration-300 ease-in-out"
+                  >
+                    Upload Plugin
+                  </Link>
+                </li>
+              </>
             )}
             {/*<li>
               <Link
@@ -161,6 +221,45 @@ export default function Nav({ fixed }) {
             >
               Projects
             </Link>
+          </li>
+        )}
+        {isLoggedIn && (
+          <li>
+            <Link
+              href="/account"
+              className="hover:text-teal-500 duration-300 ease-in-out"
+            >
+              Account
+            </Link>
+          </li>
+        )}
+        {isLoggedIn && isAdmin && (
+          <li className="relative group">
+            <span className="cursor-default hover:text-teal-500 duration-300 ease-in-out">
+              Admin
+            </span>
+            <div className="absolute left-1/2 -translate-x-1/2 pt-3 hidden group-hover:block z-40">
+              <div className="flex flex-col min-w-[160px] rounded-lg ring-1 ring-slate-600 bg-blue-950/80 backdrop-blur-md overflow-hidden">
+                <Link
+                  href="/admin/stats"
+                  className="px-5 py-3 text-sm hover:bg-teal-500/20 hover:text-teal-300 duration-200 ease-in-out"
+                >
+                  Stats
+                </Link>
+                <Link
+                  href="/admin/logs"
+                  className="px-5 py-3 text-sm hover:bg-teal-500/20 hover:text-teal-300 duration-200 ease-in-out"
+                >
+                  Logs
+                </Link>
+                <Link
+                  href="/admin/plugin"
+                  className="px-5 py-3 text-sm hover:bg-teal-500/20 hover:text-teal-300 duration-200 ease-in-out"
+                >
+                  Upload Plugin
+                </Link>
+              </div>
+            </div>
           </li>
         )}
         {/*<li>
